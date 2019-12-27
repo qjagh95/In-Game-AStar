@@ -301,6 +301,22 @@ void Stage2D_Com::CreateTileMap(int TileCountX, int TileCountY, const Vector3& S
 
 }
 
+list<Tile2D_Com*>* Stage2D_Com::GetPathList(const Vector3 & StartPos, const Vector3 & EndPos)
+{
+	if(m_PathList.size() != 0)
+		m_PathList.clear();
+
+	Tile2D_Com* StartTile = GetTile2D(StartPos);
+	Tile2D_Com* EndTile = GetTile2D(EndPos);
+
+	Vector3 StartTilePos = StartTile->GetTransform()->GetWorldPos();
+	Vector3 EndTilePos = EndTile->GetTransform()->GetWorldPos();
+
+
+	
+	return &m_PathList;
+}
+
 void Stage2D_Com::CreateTile(const Vector3& StartPos, const Vector3& TileScale, const string& KeyName, const TCHAR* FileName, const string& PathKey)
 {
 	for (int y = 0; y < m_TileCountY; ++y)

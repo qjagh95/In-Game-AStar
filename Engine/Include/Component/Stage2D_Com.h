@@ -42,6 +42,7 @@ public:
 	void SetLineOn(bool Value);
 
 	void CreateTileMap(int TileCountX, int TileCountY, const Vector3& StartPos, const Vector3& TileScale, STAGE2D_TILE_TYPE tileType, const string& KeyName = "", const TCHAR* FileName = NULLPTR, const string& PathKey = TEXTURE_PATH);
+	list<Tile2D_Com*>* GetPathList(const Vector3& StartPos, const Vector3& EndPos);
 
 private:
 	void CreateTile(const Vector3& StartPos, const Vector3& TileScale, const string& KeyName = "", const TCHAR* FileName = NULLPTR,	const string& PathKey = TEXTURE_PATH);
@@ -69,6 +70,8 @@ private:
 	int	m_StartY;
 	int	m_EndX;
 	int	m_EndY;
+
+	list<Tile2D_Com*> m_PathList;
 
 protected:
 	Stage2D_Com();
