@@ -3,9 +3,9 @@
 
 #include "Component/Animation2D_Com.h"
 #include "Component/Collider_Com.h"
+#include <Component/Stage2D_Com.h>
 
 JEONG_USING
-
 class Player_Com : public UserComponent_Base
 {
 public:
@@ -18,7 +18,8 @@ public:
 	void Render(float DeltaTime) override;
 	Player_Com* Clone() override;
 
-	void PixelHit(Collider_Com* Src, Collider_Com* Dest, float DeltaTime);
+	void SetStage(Stage2D_Com* stage) { m_Stage = stage; }
+	Stage2D_Com* GetStage() const { return m_Stage; }
 
 private:
 	bool isCharge;
@@ -26,6 +27,7 @@ private:
 	float ScaleVar;
 	GameObject* BaseBullet;
 	Animation2D_Com* myAnimation;
+	Stage2D_Com* m_Stage;
 
 protected:
 	Player_Com();

@@ -276,31 +276,10 @@ void Tile2D_Com::AddSubTileImage(const string& FileName, size_t ImageCount)
 	GameObject* newTileImageObject = GameObject::CreateObject("TileImageObject");
 	TileImage_Com* newImage = newTileImageObject->AddComponent<TileImage_Com>("TileImage");
 
-	for (size_t i = 0; i < ImageCount; i++)
+	for (size_t i = 1; i < ImageCount; i++)
 	{
-		//float RandomAngle = RandomRange(-45, 45);
-
-		switch (i)
-		{
-			case 0:
-			{
-				newImage->SetDistance(300.0f);
-				newImage->SetTexture(FileName , CA2W(FileName.c_str()));
-			}
-				break;
-			case 1:
-			{
-				newImage->SetDistance(200.0f);
-				newImage->SetTexture(FileName, CA2W(FileName.c_str()));
-			}
-				break;
-			case 2:
-			{
-				newImage->SetDistance(100.0f);
-				newImage->SetTexture(FileName, CA2W(FileName.c_str()));
-			}
-				break;
-		}
+		newImage->SetDistance(static_cast<float>(i * 100));
+		newImage->SetTexture(FileName , CA2W(FileName.c_str()));
 	}
 
 

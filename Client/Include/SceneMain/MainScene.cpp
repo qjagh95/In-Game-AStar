@@ -58,17 +58,18 @@ bool MainScene::Init()
 	pStage->Load(Reader);
 	pStage->SetLineOn(true);
 
-	SAFE_RELEASE(pStage);
-	SAFE_RELEASE(pStageObj);
-
 	GameObject* PlayerObject = GameObject::CreateObject("Player", Default);
 	Player_Com* player_Com = PlayerObject->AddComponent<Player_Com>("Player_Com");
+	player_Com->SetStage(pStage);
+	player_Com->GetTransform()->SetWorldPos(Vector3(100.0f, 100.0f, 0.0f));
 	SAFE_RELEASE(player_Com);
 
 	mainCamera->SetTarget(PlayerObject);
 	SAFE_RELEASE(mainCamera);
 	SAFE_RELEASE(PlayerObject);
 
+	SAFE_RELEASE(pStage);
+	SAFE_RELEASE(pStageObj);
 	SAFE_RELEASE(Default);
 	SAFE_RELEASE(UILayer);
 	SAFE_RELEASE(TileLayer);

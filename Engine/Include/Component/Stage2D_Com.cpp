@@ -309,11 +309,14 @@ list<Tile2D_Com*>* Stage2D_Com::GetPathList(const Vector3 & StartPos, const Vect
 	Tile2D_Com* StartTile = GetTile2D(StartPos);
 	Tile2D_Com* EndTile = GetTile2D(EndPos);
 
+	if (StartTile == NULLPTR || EndTile == NULLPTR)
+		return NULLPTR;
+
 	Vector3 StartTilePos = StartTile->GetTransform()->GetWorldPos();
 	Vector3 EndTilePos = EndTile->GetTransform()->GetWorldPos();
 
 
-	
+
 	return &m_PathList;
 }
 

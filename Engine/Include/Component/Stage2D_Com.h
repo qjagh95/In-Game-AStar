@@ -57,8 +57,8 @@ private:
 	int m_Tile2DComCapacity;
 	int m_Tile2DComSize;
 
-	int m_TileCountX;
-	int m_TileCountY;
+	int m_TileCountX; //°¡·Î°¹¼ö
+	int m_TileCountY; //¼¼·Î°¹¼ö
 
 	STAGE2D_TILE_TYPE m_TileType;
 
