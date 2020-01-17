@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Tile2D_Com.h"
 #include "TileImage_Com.h"
+#include "Stage2D_Com.h"
 
 #include "../Resource/Mesh.h"
 #include "../Render/Shader.h"
@@ -13,6 +14,8 @@ Tile2D_Com::Tile2D_Com()
 	m_ComType = CT_STAGE2D;
 	SetTag("Stage2D");
 	m_isLine = true;
+	m_Stage = NULLPTR;
+	m_AdjList.reserve(8);
 }
 
 Tile2D_Com::Tile2D_Com(const Tile2D_Com& CopyData)
@@ -215,5 +218,25 @@ void Tile2D_Com::SetPos(const Vector3 & Pos)
 void Tile2D_Com::SettingAdj(int TileXCount, Tile2D_Com** TileList)
 {
 	//방향 푸시(장애물 제외)
+	int Idx[8] = 
+	{ 
+	  m_MyIndex - 1, 
+	  m_MyIndex + 1, 
+	  m_MyIndex + TileXCount, 
+	  m_MyIndex - TileXCount, 
+	  m_MyIndex + TileXCount + 1, 
+	  m_MyIndex + TileXCount - 1,
+	  m_MyIndex - TileXCount - 1,
+	  m_MyIndex - TileXCount + 1
+	};
+
+	for (size_t i = 0; i < 7; i++)
+	{
+		Tile2D_Com* getTile = m_Stage->GetTile2D(Idx[i]);
+
+		if (getTile != NULLPTR)
+			m_AdjList.push_back(getTile);
+	}
+	m_AdjList.shrink_to_fit();
 }
 

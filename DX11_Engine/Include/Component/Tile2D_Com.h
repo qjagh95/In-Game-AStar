@@ -6,6 +6,7 @@ JEONG_BEGIN
 class Shader;
 class Mesh;
 class TileImage_Com;
+class Stage2D_Com;
 class JEONG_DLL Tile2D_Com : public Component_Base
 {
 public:
@@ -26,12 +27,14 @@ public:
 	void SetLineOn(bool Value) { m_isLine = Value; }
 	void SetTileType(STAGE2D_TILE_TYPE type);
 	void SetMesh(const string& KeyName);
-	void SetWorldPos(const Vector3& Pos);
 
-	void AddMainTileImage(const string& FileName);
-	void AddSubTileImage(const string& FileName, size_t ImageCount);
-	TileImage_Com* GetMainTileImage() const { return m_TileImage; }
-	TileImage_Com* GetSubTileImage(size_t index) const { return m_vecTileImage[index]; }
+	float GetG(const Vector3& StartPos);
+	float GetH(const Vector3& EndPos);
+	void SetPos(const Vector3& Pos);
+	void SettingAdj(int TileXCount, Tile2D_Com** TileList);
+	Vector3 GetCenterPos() const { return m_CenterPos; }
+	void SetIndex(int Index) { m_MyIndex = Index; }
+	void SetStage(Stage2D_Com* stage) { m_Stage = stage; }
 
 private:
 	TILE2D_OPTION m_TileOption;
@@ -40,9 +43,10 @@ private:
 	Mesh* m_Mesh;
 	ID3D11InputLayout* m_Layout;
 	bool  m_isLine;
-
-	TileImage_Com* m_TileImage;
-	vector<TileImage_Com*> m_vecTileImage;
+	Vector3 m_CenterPos;
+	vector<Tile2D_Com*> m_AdjList;
+	Stage2D_Com* m_Stage;
+	int m_MyIndex;
 
 protected:
 	Tile2D_Com();

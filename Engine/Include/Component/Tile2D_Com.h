@@ -6,6 +6,7 @@ JEONG_BEGIN
 class Shader;
 class Mesh;
 class TileImage_Com;
+class Stage2D_Com;
 class JEONG_DLL Tile2D_Com : public Component_Base
 {
 public:
@@ -30,8 +31,11 @@ public:
 	float GetG(const Vector3& StartPos);
 	float GetH(const Vector3& EndPos);
 	void SetPos(const Vector3& Pos);
-	Vector3 GetCenterPos() const { return m_CenterPos; }
 	void SettingAdj(int TileXCount, Tile2D_Com** TileList);
+	Vector3 GetCenterPos() const { return m_CenterPos; }
+	void SetIndex(int Index) { m_MyIndex = Index; }
+	void SetStage(Stage2D_Com* stage) { m_Stage = stage; }
+	vector<Tile2D_Com*>* GetAdjList() { return &m_AdjList; }
 
 private:
 	TILE2D_OPTION m_TileOption;
@@ -42,6 +46,8 @@ private:
 	bool  m_isLine;
 	Vector3 m_CenterPos;
 	vector<Tile2D_Com*> m_AdjList;
+	Stage2D_Com* m_Stage;
+	int m_MyIndex;
 
 protected:
 	Tile2D_Com();

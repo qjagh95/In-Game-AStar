@@ -89,7 +89,6 @@ int Player_Com::Input(float DeltaTime)
 		m_Stage->GetPathList(myPos, ClickPos);
 	}
 
-
 	return 0;
 }
 

@@ -26,8 +26,6 @@ public:
 	void SetTileOption(const Vector3& Pos, TILE2D_OPTION option);
 	void SetNoMoveMesh(const Vector3& Pos, STAGE2D_TILE_TYPE TileType);
 	void SetMoveMesh(const Vector3& Pos, STAGE2D_TILE_TYPE TileType);
-	void SetMainImage(const Vector3& Pos, const string& FileName);
-	void SetSubImage(const Vector3& Pos, const string& FileName, size_t ImageCount);
 
 	Tile2D_Com* GetTile2D(const Vector3& Pos);
 	Tile2D_Com* GetTile2D(float X, float Y, float Z);
@@ -57,8 +55,8 @@ private:
 	int m_Tile2DComCapacity;
 	int m_Tile2DComSize;
 
-	int m_TileCountX;
-	int m_TileCountY;
+	int m_TileCountX; //°¡·Î°¹¼ö
+	int m_TileCountY; //¼¼·Î°¹¼ö
 
 	STAGE2D_TILE_TYPE m_TileType;
 
@@ -72,6 +70,10 @@ private:
 	int	m_EndY;
 
 	list<Tile2D_Com*> m_PathList;
+	list<Tile2D_Com*> m_OpenList;
+	list<Tile2D_Com*> m_CloseList;
+
+	Tile2D_Com* m_TargetTile;
 
 protected:
 	Stage2D_Com();

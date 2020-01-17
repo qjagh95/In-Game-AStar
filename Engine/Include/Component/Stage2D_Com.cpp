@@ -322,8 +322,6 @@ list<Tile2D_Com*>* Stage2D_Com::GetPathList(const Vector3 & StartPos, const Vect
 	Vector3 StartTilePos = StartTile->GetTransform()->GetWorldPos();
 	Vector3 EndTilePos = EndTile->GetTransform()->GetWorldPos();
 
-	vector<Tile2D_Com*> vecTile;
-	vecTile.reserve(8);
  
 	return &m_PathList;
 }
@@ -345,6 +343,8 @@ void Stage2D_Com::CreateTile(const Vector3& StartPos, const Vector3& TileScale, 
 			pTile->SetTileType(STT_TILE);
 			pTile->SetLineOn(m_isLineOn);
 			pTile->SetMesh("ColliderRect");
+			pTile->SetIndex(Index);
+			pTile->SetStage(this);
 
 			Transform_Com*	pTransform = newTileObject->GetTransform();
 			pTransform->SetWorldScale(TileScale);
@@ -391,6 +391,15 @@ void Stage2D_Com::CreateTile(const Vector3& StartPos, const Vector3& TileScale, 
 			m_Tile2DComSize++;
 		}//for(x)
 	}//for(y)
+
+	for (int y = 0; y < m_TileCountY; ++y)
+	{
+		for (int x = 0; x < m_TileCountX; ++x)
+		{
+			int	Index = y * m_TileCountX + x;
+			m_vecTile2DCom[Index]->SettingAdj(m_TileCountX, m_vecTile2DCom);
+		}
+	}
 }
 
 void Stage2D_Com::CreateIsoTile(const Vector3& StartPos, const Vector3& TileScale, const string& KeyName , const TCHAR* FileName, const string& PathKey)
