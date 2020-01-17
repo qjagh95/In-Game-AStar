@@ -8,7 +8,7 @@
 JEONG_USING
 
 Tile2D_Com::Tile2D_Com()
-	:m_Shader(NULLPTR), m_Mesh(NULLPTR), m_Layout(NULLPTR), m_TileImage(NULLPTR)
+	:m_Shader(NULLPTR), m_Mesh(NULLPTR), m_Layout(NULLPTR)
 {
 	m_ComType = CT_STAGE2D;
 	SetTag("Stage2D");
@@ -25,9 +25,6 @@ Tile2D_Com::~Tile2D_Com()
 {
 	SAFE_RELEASE(m_Mesh);
 	SAFE_RELEASE(m_Shader);
-	SAFE_RELEASE(m_TileImage);
-
-	Safe_Release_VecList(m_vecTileImage);
 }
 
 bool Tile2D_Com::Init()
@@ -38,93 +35,38 @@ bool Tile2D_Com::Init()
 	m_Shader = ShaderManager::Get()->FindShader(COLLIDER_SHADER);
 
 	m_Transform->SetWorldPivot(0.5f, 0.5f, 0.0f);
-	m_vecTileImage.resize(3);
 
 	return true;
 }
 
 int Tile2D_Com::Input(float DeltaTime)
 {
-	//m_TileImage->Input(DeltaTime);
-
-	//for (size_t i = 0; i < m_vecTileImage.size(); i++)
-	//{
-	//	if (m_vecTileImage[i] != NULLPTR)
-	//		continue;
-	//		
-	//	m_vecTileImage[i]->Input(DeltaTime);
-	//}
-
 	return 0;
 }
 
 int Tile2D_Com::Update(float DeltaTime)
 {
-	//m_TileImage->Update(DeltaTime);
-
-	//for (size_t i = 0; i < m_vecTileImage.size(); i++)
-	//{
-	//	if (m_vecTileImage[i] != NULLPTR)
-	//		continue;
-
-	//	m_vecTileImage[i]->Update(DeltaTime);
-	//}
-
 	return 0;
 }
 
 int Tile2D_Com::LateUpdate(float DeltaTime)
 {
-	//m_TileImage->LateUpdate(DeltaTime);
 
-	//for (size_t i = 0; i < m_vecTileImage.size(); i++)
-	//{
-	//	if (m_vecTileImage[i] != NULLPTR)
-	//		continue;
-
-	//	m_vecTileImage[i]->LateUpdate(DeltaTime);
-	//}
 	return 0;
 }
 
 void Tile2D_Com::Collision(float DeltaTime)
 {
-	//m_TileImage->Collision(DeltaTime);
 
-	//for (size_t i = 0; i < m_vecTileImage.size(); i++)
-	//{
-	//	if (m_vecTileImage[i] != NULLPTR)
-	//		continue;
-
-	//	m_vecTileImage[i]->Collision(DeltaTime);
-	//}
 }
 
 void Tile2D_Com::CollisionLateUpdate(float DeltaTime)
 {
-	//m_TileImage->CollisionLateUpdate(DeltaTime);
 
-	//for (size_t i = 0; i < m_vecTileImage.size(); i++)
-	//{
-	//	if (m_vecTileImage[i] != NULLPTR)
-	//		continue;
-
-	//	m_vecTileImage[i]->CollisionLateUpdate(DeltaTime);
-	//}
 }
 
 void Tile2D_Com::Render(float DeltaTime)
 {
-	//m_TileImage->Render(DeltaTime);
-
-	//for (size_t i = 0; i < m_vecTileImage.size(); i++)
-	//{
-	//	if (m_vecTileImage[i] != NULLPTR)
-	//		continue;
-
-	//	m_vecTileImage[i]->Render(DeltaTime);
-	//}
-
 	if (m_isLine == false)
 		return;
 
@@ -251,39 +193,27 @@ void Tile2D_Com::SetMesh(const string & KeyName)
 	m_Mesh = ResourceManager::Get()->FindMesh(KeyName);
 }
 
-void Tile2D_Com::SetWorldPos(const Vector3 & Pos)
+float Tile2D_Com::GetG(const Vector3 & StartPos)
 {
+	return m_CenterPos.GetDistance(StartPos);
+}
+
+float Tile2D_Com::GetH(const Vector3 & EndPos)
+{
+	return m_CenterPos.GetDistance(EndPos);
+}
+
+void Tile2D_Com::SetPos(const Vector3 & Pos)
+{
+	Vector3 Scale = m_Transform->GetWorldScale();
+	Scale *= 0.5f;
+	
 	m_Transform->SetWorldPos(Pos);
-	m_TileImage->GetTransform()->SetWorldPos(Pos);
-
-	for (size_t i = 0; i < m_vecTileImage.size(); i++)
-		m_vecTileImage[i]->GetTransform()->SetWorldPos(Pos);
+	m_CenterPos = Pos + Scale;
 }
 
-void Tile2D_Com::AddMainTileImage(const string& FileName)
+void Tile2D_Com::SettingAdj(int TileXCount, Tile2D_Com** TileList)
 {
-	GameObject* newTileImageObject = GameObject::CreateObject("TileImageObject");
-	m_TileImage = newTileImageObject->AddComponent<TileImage_Com>("TileImage");
-	m_TileImage->SetTexture(FileName, CA2W(FileName.c_str()));
-
-	newTileImageObject->GetTransform()->SetWorldPos(m_Transform->GetWorldPos());
-
-	SAFE_RELEASE(newTileImageObject);
+	//방향 푸시(장애물 제외)
 }
 
-void Tile2D_Com::AddSubTileImage(const string& FileName, size_t ImageCount)
-{
-	GameObject* newTileImageObject = GameObject::CreateObject("TileImageObject");
-	TileImage_Com* newImage = newTileImageObject->AddComponent<TileImage_Com>("TileImage");
-
-	for (size_t i = 1; i < ImageCount; i++)
-	{
-		newImage->SetDistance(static_cast<float>(i * 100));
-		newImage->SetTexture(FileName , CA2W(FileName.c_str()));
-	}
-
-
-	m_vecTileImage.push_back(newImage);
-
-	SAFE_RELEASE(newTileImageObject);
-}

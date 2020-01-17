@@ -11,6 +11,7 @@ Stage2D_Com::Stage2D_Com()
 	m_ComType = CT_TILE2D;
 	SetTag("Stage2D");
 	m_isLineOn = true;
+	m_TargetTile = NULLPTR;
 }
 
 Stage2D_Com::Stage2D_Com(const Stage2D_Com& CopyData)
@@ -309,14 +310,21 @@ list<Tile2D_Com*>* Stage2D_Com::GetPathList(const Vector3 & StartPos, const Vect
 	Tile2D_Com* StartTile = GetTile2D(StartPos);
 	Tile2D_Com* EndTile = GetTile2D(EndPos);
 
-	if (StartTile == NULLPTR || EndTile == NULLPTR)
-		return NULLPTR;
+	if (EndTile == m_TargetTile)
+		return &m_PathList;
 
+	if (StartTile == NULLPTR || EndTile == NULLPTR)
+	{
+		m_PathList. clear();
+		return &m_PathList;
+	}
+	
 	Vector3 StartTilePos = StartTile->GetTransform()->GetWorldPos();
 	Vector3 EndTilePos = EndTile->GetTransform()->GetWorldPos();
 
-
-
+	vector<Tile2D_Com*> vecTile;
+	vecTile.reserve(8);
+ 
 	return &m_PathList;
 }
 
@@ -342,7 +350,7 @@ void Stage2D_Com::CreateTile(const Vector3& StartPos, const Vector3& TileScale, 
 			pTransform->SetWorldScale(TileScale);
 
 			Vector3	vPos = StartPos + TileScale * Vector3((float)x, (float)y, 1.0f);
-			pTransform->SetWorldPos(vPos);
+			pTile->SetPos(vPos);
 
 			if (FileName != NULLPTR)
 			{
@@ -587,38 +595,4 @@ Tile2D_Com * Stage2D_Com::GetTile2D(float X, float Y, float Z)
 		return NULLPTR;
 
 	return m_vecTile2DCom[Index];
-}
-
-void Stage2D_Com::SetMainImage(const Vector3 & Pos, const string & FileName)
-{
-	int Index = GetTileIndex(Pos);
-
-	if (Index == -1)
-		return;
-
-	//한번만 들어옴.
-	if (m_vecTile2DCom[Index]->GetMainTileImage() != NULLPTR)
-		return;
-
-	string Path = PathManager::Get()->FindPathMultiByte(TEXTURE_PATH);
-	Path += FileName;
-
-	m_vecTile2DCom[Index]->AddMainTileImage(Path);
-}
-
-void Stage2D_Com::SetSubImage(const Vector3 & Pos, const string & FileName, size_t ImageCount)
-{
-	int Index = GetTileIndex(Pos);
-
-	if (Index == -1)
-		return;
-
-	//한번만 들어옴.
-	if (m_vecTile2DCom[Index]->GetSubTileImage(ImageCount) != NULLPTR)
-		return;
-
-	string Path = PathManager::Get()->FindPathMultiByte(TEXTURE_PATH);
-	Path += FileName;
-
-	m_vecTile2DCom[Index]->AddSubTileImage(Path, ImageCount);
 }
