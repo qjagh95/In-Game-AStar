@@ -80,16 +80,15 @@ int Player_Com::Input(float DeltaTime)
 		Vector3 myPos = m_Transform->GetWorldPos();
 
 		m_Path = *m_Stage->GetPathList(myPos, ClickPos);
-		m_Path2 = *m_Stage->GetPathList2();
 	}
 
 	if (m_Path.size() != 0)
 	{
-		Vector3 MovePos = m_Path.front();
+		Vector3 MovePos = m_Path.back();
 		Vector3 myPos = m_Transform->GetWorldPos();
 
 		if (MovePos.GetDistance(myPos) < 10.0f)
-			m_Path.pop_front();
+			m_Path.pop_back();
 
 		cout << m_Path.size() << endl;
 		m_Transform->Move(Vector3::Nomallize(MovePos - myPos), 100.0f, DeltaTime);

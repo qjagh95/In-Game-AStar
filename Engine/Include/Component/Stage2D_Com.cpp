@@ -1,17 +1,8 @@
 #include "stdafx.h"
 #include "Stage2D_Com.h"
-#include "Tile2D_Com.h"
+
 
 JEONG_USING
-
-struct Cmp
-{
-	bool Sort(Tile2D_Com& Src, Tile2D_Com& Dest)
-	{
-		return Src.GetF() < Dest.GetF();
-	}
-};
-
 
 Stage2D_Com::Stage2D_Com()
 	:m_vecTile2DCom(NULLPTR), m_vecTileObject(NULLPTR),
@@ -332,10 +323,16 @@ list<Vector3>* Stage2D_Com::GetPathList(const Vector3 & StartPos, const Vector3 
 		return &m_PathList;
 	}
 
+	if (EndTile->GetTileOption() == T2D_NOMOVE)
+	{
+		m_PathList.clear();
+		return &m_PathList;
+	}
+
 	if (StartTile == EndTile)
 	{
 		m_PathList.clear();
-		m_PathList.push_back(EndTile->GetTransform()->GetWorldPos());
+		m_PathList.push_back(EndTile->GetCenterPos());
 		return &m_PathList;
 	}
 
@@ -351,32 +348,21 @@ list<Vector3>* Stage2D_Com::GetPathList(const Vector3 & StartPos, const Vector3 
 	//오픈리스트에 시작노드 삽입(최초노드)
 	m_OpenList.push_back(StartTile);
 
-	//만일 오픈리스트가 비어있지 않다면 무한루프
+	//만일 오픈리스트가 비어있지 않다면 루프
 	while (m_OpenList.size() != 0)
 	{
-		//오픈 리스트에 담겨있는 첫 번째 노드를 현재 노드라고 설정.
 		Tile2D_Com* CurTile = m_OpenList.front();
 
-		//이동 가능한 이웃 타일들이 담겨있는 오픈 리스트에 포함된 타일의 F값을 현재 노드의 F와 비교
-		auto StartIter = m_OpenList.begin();
-		auto EndIter = m_OpenList.end();
-		auto SaveIter = StartIter;  //리스트에서 삭제시킬라고 만듬
+		//이동 가능한 인접 타일들이 담겨있는 오픈 리스트에 포함된 타일의 F값을 현재 노드의 F와 비교
+		m_OpenList.sort(&Stage2D_Com::MySort);
 
-		for(; StartIter != EndIter; StartIter++)
-		{
-			Tile2D_Com* getTile = *StartIter;
-			//1. 만약 이웃의 F값이 현재 타일보다 작거나, 
-			//2. 이웃 타일의 F는 현재 타일의 F와 같지만, 이웃 타일의 H가 현재타일의 H보다 작으면 최단거리
-			//3. 그 이웃 타일을 현재 노드(최단거리 타일)로 변경한다.
-			if (getTile->GetF() < CurTile->GetF() || getTile->GetF() == CurTile->GetF() && getTile->GetH() < CurTile->GetH())
-			{
-				CurTile = getTile;
-				SaveIter = StartIter;
-			}
-		}
+		auto StartIter = m_OpenList.begin();
+
+		//가장 낮은 비용의 F를 찾아 현재타일로 선택
+		CurTile = m_OpenList.front();
 
 		//현재 타일을 오픈리스트에서 제거하고, 닫힌목록에 추가한다.
-		m_OpenList.erase(SaveIter);
+		m_OpenList.erase(m_OpenList.begin());
 		m_CloseList.insert(CurTile);
 
 		//변경된 현재 타일이 목표 타일과 같은 타일이면 루프를 빠진다. (길찾기 후 처리)
@@ -386,31 +372,40 @@ list<Vector3>* Stage2D_Com::GetPathList(const Vector3 & StartPos, const Vector3 
 			return &m_PathList;
 		}
 
-		//이웃 타일을 오픈리스트에 추가하면서 G, H값을 설정한다.
+		//인접 타일을 탐색한다.
 		for (size_t i = 0; i < CurTile->GetAdjList()->size(); i++)
 		{
-			//장애물타일이 아니거나 닫힌목록에 없다면 추가한다. (G / H / F설정)
 			Tile2D_Com* getTile = CurTile->GetAdjList()->at(i);
-			if (getTile->GetTileOption() != T2D_NOMOVE || CheckCloseList(getTile) == false)
+			//장애물타일 이거나 닫힌목록에 있다면 무시
+			if (getTile->GetTileOption() == T2D_NOMOVE || CheckCloseList(getTile) == true)
+				continue;
+
+			Vector3 Dist = CurTile->GetTransform()->GetWorldPos();
+
+			//이미 오픈리스트에 있다면
+			if (CheckOpenList(getTile) == true)
 			{
-				Vector3 Dist = CurTile->GetTransform()->GetWorldPos();
-				//이동 비용 구하기 (G)
-				int G = static_cast<int>(CurTile->GetG() + Dist.GetDistance(getTile->GetTransform()->GetWorldPos()));
+				int G = static_cast<int>(CurTile->GetG() + Dist.GetDistance(getTile->GetCenterPos()));
 
-				//1. 이웃 타일이 오픈리스트에 없거나  
-				//2. 이웃 타일의 G값이 현재 타일의 G값보다 크다면
-				//3. 현재 타일 기반의 G값으로 덮어씌운다.
-				if (CheckOpenList(getTile) == false || getTile->GetG() > G)
+				//G값을 비교하여 더 적은 타일의 부모를 설정한다.
+				if (CurTile->GetG() < getTile->GetG())
 				{
-					Dist = getTile->GetTransform()->GetWorldPos();
-
-					getTile->SetG(G);
-					getTile->SetH(static_cast<int>(Dist.GetDistance(EndPos)));
 					getTile->SetParent(CurTile);
-
-					//해당 이웃 타일이 오픈리스트에 속하지 않았다면 이웃 타일을 오픈리스트에 추가한다.
-					m_OpenList.push_back(getTile);
+					getTile->SetG(G);
+					m_OpenList.sort(&Stage2D_Com::MySort);
 				}
+			}
+			else
+			{
+				//해당 인접 타일이 오픈리스트에 속하지 않았다면 인접 타일을 오픈리스트에 추가한다.
+				getTile->SetParent(CurTile);
+				m_OpenList.push_back(getTile);
+				//F, G, H기록
+				int G = static_cast<int>(CurTile->GetG() + Dist.GetDistance(getTile->GetCenterPos()));
+				Vector3 vH = getTile->GetCenterPos();
+
+				getTile->SetG(G);
+				getTile->SetH(static_cast<int>(vH.GetDistance(EndPos)));
 			}
 		}
 	}

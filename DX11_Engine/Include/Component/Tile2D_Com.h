@@ -36,10 +36,9 @@ public:
 	void SetIndex(int Index) { m_MyIndex = Index; }
 	void SetStage(Stage2D_Com* stage) { m_Stage = stage; }
 	vector<Tile2D_Com*>* GetAdjList() { return &m_AdjList; }
-	void SetF(int F) { m_F = F; }
 	int GetF() const { return m_F; }
-	void SetG(int G) { m_G = G; }
-	void SetH(int H) { m_H = H; }
+	void SetG(int G) { m_G = G; m_F = m_G + m_H; }
+	void SetH(int H) { m_H = H; m_F = m_G + m_H; }
 	void SetParent(Tile2D_Com* parent) { m_Parent = parent; }
 	Tile2D_Com* GetParent() const { return m_Parent; }
 

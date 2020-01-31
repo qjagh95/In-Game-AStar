@@ -1,5 +1,6 @@
 #pragma once
 #include "Component_Base.h"
+#include "Tile2D_Com.h"
 
 JEONG_BEGIN
 
@@ -42,7 +43,6 @@ public:
 
 	void CreateTileMap(int TileCountX, int TileCountY, const Vector3& StartPos, const Vector3& TileScale, STAGE2D_TILE_TYPE tileType, const string& KeyName = "", const TCHAR* FileName = NULLPTR, const string& PathKey = TEXTURE_PATH);
 	list<Vector3>* GetPathList(const Vector3& StartPos, const Vector3& EndPos);
-	list<Tile2D_Com*>* GetPathList2() { return &m_PathList2; }
 
 private:
 	void CreateTile(const Vector3& StartPos, const Vector3& TileScale, const string& KeyName = "", const TCHAR* FileName = NULLPTR,	const string& PathKey = TEXTURE_PATH);
@@ -52,6 +52,10 @@ private:
 	bool CheckOpenList(Tile2D_Com* tile);
 
 	void Finish(Tile2D_Com* StartTile, Tile2D_Com* EndTile);
+	static bool MySort(const Tile2D_Com* Src, const Tile2D_Com* Dest)
+	{
+		return Src->GetF() < Dest->GetF();
+	}
 
 private:
 	GameObject** m_vecTileObject;
@@ -77,7 +81,6 @@ private:
 	int	m_EndY;
 
 	list<Vector3> m_PathList;
-	list<Tile2D_Com*> m_PathList2;
 	list<Tile2D_Com*> m_OpenList;
 	set<Tile2D_Com*> m_CloseList;
 
