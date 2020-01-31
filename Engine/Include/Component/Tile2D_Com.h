@@ -28,14 +28,20 @@ public:
 	void SetTileType(STAGE2D_TILE_TYPE type);
 	void SetMesh(const string& KeyName);
 
-	float GetG(const Vector3& StartPos);
-	float GetH(const Vector3& EndPos);
+	int GetG() { return m_G; }
+	int GetH() { return m_H; }
 	void SetPos(const Vector3& Pos);
 	void SettingAdj(int TileXCount, Tile2D_Com** TileList);
 	Vector3 GetCenterPos() const { return m_CenterPos; }
 	void SetIndex(int Index) { m_MyIndex = Index; }
 	void SetStage(Stage2D_Com* stage) { m_Stage = stage; }
 	vector<Tile2D_Com*>* GetAdjList() { return &m_AdjList; }
+	void SetF(int F) { m_F = F; }
+	int GetF() const { return m_F; }
+	void SetG(int G) { m_G = G; }
+	void SetH(int H) { m_H = H; }
+	void SetParent(Tile2D_Com* parent) { m_Parent = parent; }
+	Tile2D_Com* GetParent() const { return m_Parent; }
 
 private:
 	TILE2D_OPTION m_TileOption;
@@ -48,6 +54,10 @@ private:
 	vector<Tile2D_Com*> m_AdjList;
 	Stage2D_Com* m_Stage;
 	int m_MyIndex;
+	int m_F;
+	int m_G;
+	int m_H;
+	Tile2D_Com* m_Parent;
 
 protected:
 	Tile2D_Com();

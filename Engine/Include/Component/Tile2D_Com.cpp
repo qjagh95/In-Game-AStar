@@ -16,6 +16,10 @@ Tile2D_Com::Tile2D_Com()
 	m_isLine = true;
 	m_Stage = NULLPTR;
 	m_AdjList.reserve(8);
+	m_F = 0;
+	m_G = 0;
+	m_H = 0;
+	m_Parent = NULLPTR;
 }
 
 Tile2D_Com::Tile2D_Com(const Tile2D_Com& CopyData)
@@ -196,16 +200,6 @@ void Tile2D_Com::SetMesh(const string & KeyName)
 	m_Mesh = ResourceManager::Get()->FindMesh(KeyName);
 }
 
-float Tile2D_Com::GetG(const Vector3 & StartPos)
-{
-	return m_CenterPos.GetDistance(StartPos);
-}
-
-float Tile2D_Com::GetH(const Vector3 & EndPos)
-{
-	return m_CenterPos.GetDistance(EndPos);
-}
-
 void Tile2D_Com::SetPos(const Vector3 & Pos)
 {
 	Vector3 Scale = m_Transform->GetWorldScale();
@@ -230,13 +224,15 @@ void Tile2D_Com::SettingAdj(int TileXCount, Tile2D_Com** TileList)
 	  m_MyIndex - TileXCount + 1
 	};
 
-	for (size_t i = 0; i < 7; i++)
+	for (size_t i = 0; i < 8; i++)
 	{
-		Tile2D_Com* getTile = m_Stage->GetTile2D(Idx[i]);
+		Tile2D_Com* getTile = m_Stage->GetTile2DIndex(Idx[i]);
 
 		if (getTile != NULLPTR)
-			m_AdjList.push_back(getTile);
+		{
+			if(getTile->GetTileOption() != T2D_NOMOVE)
+				m_AdjList.push_back(getTile);
+		}
 	}
 	m_AdjList.shrink_to_fit();
 }
-

@@ -4,6 +4,15 @@
 
 JEONG_USING
 
+struct Cmp
+{
+	bool Sort(Tile2D_Com& Src, Tile2D_Com& Dest)
+	{
+		return Src.GetF() < Dest.GetF();
+	}
+};
+
+
 Stage2D_Com::Stage2D_Com()
 	:m_vecTile2DCom(NULLPTR), m_vecTileObject(NULLPTR),
 	m_TileObjectCapacity(10), m_TileObjectSize(0),m_Tile2DComCapacity(10), m_Tile2DComSize(0)
@@ -11,7 +20,6 @@ Stage2D_Com::Stage2D_Com()
 	m_ComType = CT_TILE2D;
 	SetTag("Stage2D");
 	m_isLineOn = true;
-	m_TargetTile = NULLPTR;
 }
 
 Stage2D_Com::Stage2D_Com(const Stage2D_Com& CopyData)
@@ -219,7 +227,7 @@ void Stage2D_Com::Load(BineryRead & Reader)
 
 	m_vecTileObject = new GameObject*[m_TileObjectCapacity];
 	m_vecTile2DCom = new Tile2D_Com*[m_Tile2DComCapacity];
-
+	
 	for (size_t y = 0; y < m_TileCountY; ++y)
 	{
 		for (size_t x = 0; x < m_TileCountX; x++)
@@ -239,16 +247,27 @@ void Stage2D_Com::Load(BineryRead & Reader)
 			Reader.ReadData(vPos);
 
 			TileTransform->SetWorldScale(vScale);
-			TileTransform->SetWorldPos(vPos);
 
 			Tile2D_Com*	newTileCom = newTileObject->AddComponent<Tile2D_Com>("Tile");
 			newTileCom->Load(Reader);
+			newTileCom->SetIndex(Index);
+			newTileCom->SetStage(this);
+			newTileCom->SetPos(vPos);
 
 			m_vecTileObject[Index] = newTileObject;
 			m_vecTile2DCom[Index] = newTileCom;
 
 			m_TileObjectSize++;
 			m_Tile2DComSize++;
+		}
+	}
+
+	for (int y = 0; y < m_TileCountY; ++y)
+	{
+		for (int x = 0; x < m_TileCountX; ++x)
+		{
+			int	Index = y * m_TileCountX + x;
+			m_vecTile2DCom[Index]->SettingAdj(m_TileCountX, m_vecTile2DCom);
 		}
 	}
 }
@@ -302,27 +321,100 @@ void Stage2D_Com::CreateTileMap(int TileCountX, int TileCountY, const Vector3& S
 
 }
 
-list<Tile2D_Com*>* Stage2D_Com::GetPathList(const Vector3 & StartPos, const Vector3 & EndPos)
+list<Vector3>* Stage2D_Com::GetPathList(const Vector3 & StartPos, const Vector3 & EndPos)
 {
-	if(m_PathList.size() != 0)
-		m_PathList.clear();
-
 	Tile2D_Com* StartTile = GetTile2D(StartPos);
 	Tile2D_Com* EndTile = GetTile2D(EndPos);
 
-	if (EndTile == m_TargetTile)
-		return &m_PathList;
-
 	if (StartTile == NULLPTR || EndTile == NULLPTR)
 	{
-		m_PathList. clear();
+		m_PathList.clear();
 		return &m_PathList;
 	}
-	
-	Vector3 StartTilePos = StartTile->GetTransform()->GetWorldPos();
-	Vector3 EndTilePos = EndTile->GetTransform()->GetWorldPos();
 
- 
+	if (StartTile == EndTile)
+	{
+		m_PathList.clear();
+		m_PathList.push_back(EndTile->GetTransform()->GetWorldPos());
+		return &m_PathList;
+	}
+
+	if (m_PathList.size() != 0)
+		m_PathList.clear();
+
+	if (m_CloseList.size() != 0)
+		m_CloseList.clear();
+
+	if (m_OpenList.size() != 0)
+		m_OpenList.clear();
+
+	//오픈리스트에 시작노드 삽입(최초노드)
+	m_OpenList.push_back(StartTile);
+
+	//만일 오픈리스트가 비어있지 않다면 무한루프
+	while (m_OpenList.size() != 0)
+	{
+		//오픈 리스트에 담겨있는 첫 번째 노드를 현재 노드라고 설정.
+		Tile2D_Com* CurTile = m_OpenList.front();
+
+		//이동 가능한 이웃 타일들이 담겨있는 오픈 리스트에 포함된 타일의 F값을 현재 노드의 F와 비교
+		auto StartIter = m_OpenList.begin();
+		auto EndIter = m_OpenList.end();
+		auto SaveIter = StartIter;  //리스트에서 삭제시킬라고 만듬
+
+		for(; StartIter != EndIter; StartIter++)
+		{
+			Tile2D_Com* getTile = *StartIter;
+			//1. 만약 이웃의 F값이 현재 타일보다 작거나, 
+			//2. 이웃 타일의 F는 현재 타일의 F와 같지만, 이웃 타일의 H가 현재타일의 H보다 작으면 최단거리
+			//3. 그 이웃 타일을 현재 노드(최단거리 타일)로 변경한다.
+			if (getTile->GetF() < CurTile->GetF() || getTile->GetF() == CurTile->GetF() && getTile->GetH() < CurTile->GetH())
+			{
+				CurTile = getTile;
+				SaveIter = StartIter;
+			}
+		}
+
+		//현재 타일을 오픈리스트에서 제거하고, 닫힌목록에 추가한다.
+		m_OpenList.erase(SaveIter);
+		m_CloseList.insert(CurTile);
+
+		//변경된 현재 타일이 목표 타일과 같은 타일이면 루프를 빠진다. (길찾기 후 처리)
+		if (CurTile == EndTile)
+		{
+			Finish(StartTile, EndTile);
+			return &m_PathList;
+		}
+
+		//이웃 타일을 오픈리스트에 추가하면서 G, H값을 설정한다.
+		for (size_t i = 0; i < CurTile->GetAdjList()->size(); i++)
+		{
+			//장애물타일이 아니거나 닫힌목록에 없다면 추가한다. (G / H / F설정)
+			Tile2D_Com* getTile = CurTile->GetAdjList()->at(i);
+			if (getTile->GetTileOption() != T2D_NOMOVE || CheckCloseList(getTile) == false)
+			{
+				Vector3 Dist = CurTile->GetTransform()->GetWorldPos();
+				//이동 비용 구하기 (G)
+				int G = static_cast<int>(CurTile->GetG() + Dist.GetDistance(getTile->GetTransform()->GetWorldPos()));
+
+				//1. 이웃 타일이 오픈리스트에 없거나  
+				//2. 이웃 타일의 G값이 현재 타일의 G값보다 크다면
+				//3. 현재 타일 기반의 G값으로 덮어씌운다.
+				if (CheckOpenList(getTile) == false || getTile->GetG() > G)
+				{
+					Dist = getTile->GetTransform()->GetWorldPos();
+
+					getTile->SetG(G);
+					getTile->SetH(static_cast<int>(Dist.GetDistance(EndPos)));
+					getTile->SetParent(CurTile);
+
+					//해당 이웃 타일이 오픈리스트에 속하지 않았다면 이웃 타일을 오픈리스트에 추가한다.
+					m_OpenList.push_back(getTile);
+				}
+			}
+		}
+	}
+
 	return &m_PathList;
 }
 
@@ -392,14 +484,6 @@ void Stage2D_Com::CreateTile(const Vector3& StartPos, const Vector3& TileScale, 
 		}//for(x)
 	}//for(y)
 
-	for (int y = 0; y < m_TileCountY; ++y)
-	{
-		for (int x = 0; x < m_TileCountX; ++x)
-		{
-			int	Index = y * m_TileCountX + x;
-			m_vecTile2DCom[Index]->SettingAdj(m_TileCountX, m_vecTile2DCom);
-		}
-	}
 }
 
 void Stage2D_Com::CreateIsoTile(const Vector3& StartPos, const Vector3& TileScale, const string& KeyName , const TCHAR* FileName, const string& PathKey)
@@ -476,6 +560,39 @@ void Stage2D_Com::CreateIsoTile(const Vector3& StartPos, const Vector3& TileScal
 
 		}//for(x)
 	}//for(y)
+}
+
+
+bool Stage2D_Com::CheckCloseList(Tile2D_Com * tile)
+{
+	auto FindIter = m_CloseList.find(tile);
+
+	if (FindIter == m_CloseList.end())
+		return false;
+
+	return true;
+}
+
+bool Stage2D_Com::CheckOpenList(Tile2D_Com * tile)
+{
+	for (auto& CurTile : m_OpenList)
+	{
+		if (CurTile == tile)
+			return true;
+	}
+	
+	return false;
+}
+
+void Stage2D_Com::Finish(Tile2D_Com* StartTile, Tile2D_Com* EndTile)
+{
+	Tile2D_Com* Path = EndTile;
+
+	while(Path != StartTile)
+	{
+		m_PathList.push_back(Path->GetTransform()->GetWorldPos());
+		Path = Path->GetParent();
+	}
 }
 
 void Stage2D_Com::SetTileOption(const Vector3& Pos, TILE2D_OPTION option)
@@ -604,4 +721,15 @@ Tile2D_Com * Stage2D_Com::GetTile2D(float X, float Y, float Z)
 		return NULLPTR;
 
 	return m_vecTile2DCom[Index];
+}
+
+Tile2D_Com * Stage2D_Com::GetTile2DIndex(int Idx)
+{
+	if (Idx < 0)
+		return NULLPTR;
+
+	if (Idx >= m_TileCountX * m_TileCountY)
+		return NULLPTR;
+
+	return m_vecTile2DCom[Idx];
 }

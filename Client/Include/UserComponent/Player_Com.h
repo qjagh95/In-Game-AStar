@@ -28,6 +28,8 @@ private:
 	GameObject* BaseBullet;
 	Animation2D_Com* myAnimation;
 	Stage2D_Com* m_Stage;
+	list<Vector3> m_Path;
+	list<Tile2D_Com*> m_Path2;
 
 protected:
 	Player_Com();

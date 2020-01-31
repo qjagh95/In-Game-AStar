@@ -45,14 +45,13 @@ bool Player_Com::Init()
 	m_Transform->SetWorldScale(70.0f, 90.0f, 1.0f);
 	m_Transform->SetWorldPivot(0.5f, 0.0f, 0.0f);
 	m_Transform->SetWorldPos(0.0f, 0.0f, 1.0f);
-	m_Transform->RotationZ(45.0f);
 
 	myAnimation = m_Object->AddComponent<Animation2D_Com>("PlayerAnimation");
 		
 	vector<Clip2DFrame>	vecClipFrame;
 	Clip2DFrame	tFrame = {};
 
-	for (int i = 0; i < 14; ++i)
+	for (int i = 0; i < 2; ++i)
 	{
 		tFrame.LeftTop = Vector2(0.0f + i * 45.0f, 60.f);
 		tFrame.RightBottom = Vector2(45.0f + i * 45.0f, 120.f);
@@ -61,16 +60,6 @@ bool Player_Com::Init()
 
  	myAnimation->AddClip("Idle", A2D_ATLS, AO_LOOP, 1.0f, vecClipFrame, "Player", L"Player.png");
 	vecClipFrame.clear();
-
-	for (int i = 0; i < 21; ++i)
-	{
-		tFrame.LeftTop = Vector2(0.0f + i * 45.0f, 180.0f);
-		tFrame.RightBottom = Vector2(45.0f + i * 45.0f, 240.0f);
-		vecClipFrame.push_back(tFrame);
-	}
-
-	myAnimation->AddClip("Attack", A2D_ATLS, AO_LOOP, 1.0f, vecClipFrame, "Player", L"Player.png");
-
 
 	return true;
 }
@@ -82,12 +71,30 @@ int Player_Com::Input(float DeltaTime)
 	else if (KeyInput::Get()->KeyPress("MoveDown"))
 		m_Transform->Move(AXIS_Y, -1000.0f, DeltaTime);
 
+	else if (KeyInput::Get()->KeyPress("ChangeAnimation"))
+		m_Transform->SetWorldPos(0.0f, 0.0f, 0.0f);
+
 	if (KeyInput::Get()->KeyPress("MouseClick"))
 	{
 		Vector3 ClickPos = KeyInput::Get()->GetMouseWorldPos();
 		Vector3 myPos = m_Transform->GetWorldPos();
-		m_Stage->GetPathList(myPos, ClickPos);
+
+		m_Path = *m_Stage->GetPathList(myPos, ClickPos);
+		m_Path2 = *m_Stage->GetPathList2();
 	}
+
+	if (m_Path.size() != 0)
+	{
+		Vector3 MovePos = m_Path.front();
+		Vector3 myPos = m_Transform->GetWorldPos();
+
+		if (MovePos.GetDistance(myPos) < 10.0f)
+			m_Path.pop_front();
+
+		cout << m_Path.size() << endl;
+		m_Transform->Move(Vector3::Nomallize(MovePos - myPos), 100.0f, DeltaTime);
+	}
+
 
 	return 0;
 }

@@ -29,6 +29,7 @@ public:
 
 	Tile2D_Com* GetTile2D(const Vector3& Pos);
 	Tile2D_Com* GetTile2D(float X, float Y, float Z);
+	Tile2D_Com* GetTile2DIndex(int Idx);
 	Vector3 GetTileScale() const { return m_TileScale; }
 	int GetTileXCount() const { return m_TileCountX; }
 	int GetTileYCount() const { return m_TileCountY; }
@@ -40,11 +41,17 @@ public:
 	void SetLineOn(bool Value);
 
 	void CreateTileMap(int TileCountX, int TileCountY, const Vector3& StartPos, const Vector3& TileScale, STAGE2D_TILE_TYPE tileType, const string& KeyName = "", const TCHAR* FileName = NULLPTR, const string& PathKey = TEXTURE_PATH);
-	list<Tile2D_Com*>* GetPathList(const Vector3& StartPos, const Vector3& EndPos);
+	list<Vector3>* GetPathList(const Vector3& StartPos, const Vector3& EndPos);
+	list<Tile2D_Com*>* GetPathList2() { return &m_PathList2; }
 
 private:
 	void CreateTile(const Vector3& StartPos, const Vector3& TileScale, const string& KeyName = "", const TCHAR* FileName = NULLPTR,	const string& PathKey = TEXTURE_PATH);
 	void CreateIsoTile(const Vector3& StartPos, const Vector3& TileScale, const string& KeyName = "", const TCHAR* FileName = NULLPTR, const string& PathKey = TEXTURE_PATH);
+
+	bool CheckCloseList(Tile2D_Com* tile);
+	bool CheckOpenList(Tile2D_Com* tile);
+
+	void Finish(Tile2D_Com* StartTile, Tile2D_Com* EndTile);
 
 private:
 	GameObject** m_vecTileObject;
@@ -69,11 +76,10 @@ private:
 	int	m_EndX;
 	int	m_EndY;
 
-	list<Tile2D_Com*> m_PathList;
+	list<Vector3> m_PathList;
+	list<Tile2D_Com*> m_PathList2;
 	list<Tile2D_Com*> m_OpenList;
-	list<Tile2D_Com*> m_CloseList;
-
-	Tile2D_Com* m_TargetTile;
+	set<Tile2D_Com*> m_CloseList;
 
 protected:
 	Stage2D_Com();

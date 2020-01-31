@@ -17,6 +17,8 @@
 #include <algorithm>
 #include <atlstr.h>
 #include <process.h>
+#include <map>
+#include <set>
 
 ///Excel
 #include <enum.h>
